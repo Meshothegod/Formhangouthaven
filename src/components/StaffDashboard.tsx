@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, CheckCircle, XCircle, Clock, LogOut, UserPlus } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Clock, LogOut, UserPlus, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Database } from '../lib/database.types';
 
@@ -142,6 +142,21 @@ export default function StaffDashboard({ onBack, onLogout }: StaffDashboardProps
       setPendingStaff(prev => prev.filter(s => s.id !== staffId));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to reject staff member');
+    }
+  };
+
+  const deleteApplication = async (id: string) => {
+    try {
+      const { error: deleteError } = await supabase
+        .from('staff_applications')
+        .delete()
+        .eq('id', id);
+
+      if (deleteError) throw deleteError;
+
+      setApplications(prev => prev.filter(app => app.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete application');
     }
   };
 
@@ -337,6 +352,17 @@ export default function StaffDashboard({ onBack, onLogout }: StaffDashboardProps
                       >
                         <XCircle className="w-5 h-5" />
                         Reject
+                      </button>
+                    </div>
+                  )}
+                  {app.status === 'rejected' && (
+                    <div className="flex gap-3 pt-4 border-t border-gray-600">
+                      <button
+                        onClick={() => deleteApplication(app.id)}
+                        className="w-full py-2 bg-gray-600 hover:bg-red-600 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                        Delete Application
                       </button>
                     </div>
                   )}
